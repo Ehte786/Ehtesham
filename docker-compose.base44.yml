@@ -1,0 +1,20 @@
+services:
+  web:
+    image: node:22
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"
+    environment:
+      # Bare var; Vite >= 6.1 appends it to allowedHosts for the preview
+      # origin. The platform sets BASE44_PUBLIC_HOST_SUFFIX at runtime.
+      __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS: "${BASE44_PUBLIC_HOST_SUFFIX}"
+    command: ["sh", "-ec", "npm install && exec npm run dev"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    restart: on-failure
